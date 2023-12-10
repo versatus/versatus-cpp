@@ -2,14 +2,6 @@
 #include "../src/versatus_cpp.hpp"
 #include "../src/versatus_cpp_erc20.hpp"
 
-std::string addressToString(const Address& address) {
-    std::stringstream ss;
-    for (const auto& byte : address) {
-        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
-    }
-    ss << std::dec;
-    return ss.str();
-}
 
 int main() {
 

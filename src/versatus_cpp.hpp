@@ -6,9 +6,16 @@
 #include <vector>
 #include <map>
 #include <nlohmann/json.hpp>
+#include <boost/multiprecision/cpp_int.hpp>
+#include <cassert>
 
 using namespace std;
 using json = nlohmann::json;
+
+// Assumption: 20 byte address
+constexpr std::size_t ADDRESS_SIZE = 20;
+using Address = std::array<uint8_t, ADDRESS_SIZE>;
+using uint256_t = boost::multiprecision::uint256_t;
 
 class ApplicationInputs {
 public:
@@ -26,8 +33,8 @@ public:
 
 class AccountInfo {
 public:
-    std::string account_address;
-    uint64_t account_balance;
+    Address account_address;
+    uint256_t account_balance;
 };
 
 const char* const versionStr = "version";
@@ -44,6 +51,37 @@ const char* const contractFnStr = "contractFn";
 const char* const amountStr = "amount";
 const char* const recipientsStr = "recipients";
 
+Address convertStringToAddress(const std::string& account_address) {
+    try {
+        if (account_address.size() > (ADDRESS_SIZE * 2)) {
+            throw std::length_error("Input address string is too long");
+        }
+
+        Address result{};
+
+        for (std::size_t i = 0; i < result.size(); ++i) {
+            std::string byte_str = account_address.substr(i * 2, 2);
+            result[i] = static_cast<uint8_t>(std::stoi(byte_str, nullptr, 16));
+        }
+
+        return result;
+    } catch (const std::exception& e) {
+        std::cerr << "ERROR Address parse: " << e.what() << std::endl;
+        assert(0);
+        // Return the magic address in case of an exception
+        return Address{0xDE, 0xAD, 0xBE, 0xEF};
+    }
+}
+
+std::string addressToString(const Address& address) {
+    std::stringstream ss;
+    for (const auto& byte : address) {
+        ss << std::hex << std::setw(2) << std::setfill('0') << static_cast<int>(byte);
+    }
+    ss << std::dec;
+    return ss.str();
+}
+
 class ComputeInputs {
 public:
     int32_t version;
@@ -58,8 +96,15 @@ public:
         ComputeInputs inputs;
         
         inputs.version = json_obj[versionStr];
-        inputs.account_info.account_address = json_obj[accountInfoStr][accountAddressStr];
-        inputs.account_info.account_balance = json_obj[accountInfoStr][accountBalanceStr];
+        std::string account_address_str =  json_obj[accountInfoStr][accountAddressStr];
+        inputs.account_info.account_address = convertStringToAddress(account_address_str);
+        std::string account_balance_str = json_obj[accountInfoStr][accountBalanceStr];
+        inputs.account_info.account_balance = boost::multiprecision::uint256_t(account_balance_str);
+
+        std::cout << "Account Address: " << addressToString(inputs.account_info.account_address) << std::endl;
+        std::cout << "Account Balance: " << inputs.account_info.account_balance << std::endl;
+
+
         inputs.protocol_input.version = json_obj[protocolInputStr][versionStr];
         inputs.protocol_input.block_height = json_obj[protocolInputStr][blockHeightStr];
         inputs.protocol_input.block_time = json_obj[protocolInputStr][blockTimeStr];

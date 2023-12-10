@@ -1,9 +1,7 @@
 #include <string>
 #include <array>
-#include <boost/multiprecision/cpp_int.hpp>
 
-using uint256_t = boost::multiprecision::uint256_t;
-using Address = std::array<uint8_t, 20>;
+#include "./versatus_cpp.hpp"
 
 /*
     Based on https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol

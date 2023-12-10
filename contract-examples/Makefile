@@ -13,7 +13,7 @@ LDFLAGS = -I$(HOME)/json/include/ -I$(BOOST_ROOT)/include
 
 
 SRC = main.cpp
-HDRS = ../src/versatus_cpp.hpp ../src/versatus_cpp_erc20.hpp
+HDRS = ../src/versatus_cpp.hpp ../src/versatus_cpp_erc20.hpp ../src/versatus_cpp_ierc20.hpp
 
 all: local contract.wasm contract.wat
 

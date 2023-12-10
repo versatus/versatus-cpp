@@ -1,8 +1,8 @@
 {
 	"version":1,
 	"accountInfo":{
-	   "accountAddress":"contract_wallet_id",
-	   "accountBalance":65535
+	   "accountAddress":"aabbccddeeff00112233445566778899aabbccdd",
+	   "accountBalance":"12345678901234567890123456789012345678901234567890123456789012345678901234567890"
 	},
 	"protocolInput":{
 	   "version":1,
