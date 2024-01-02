@@ -1,11 +1,14 @@
+
+/*
+    Based on https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol
+*/
+
 #include <string>
 #include <array>
 
 #include "./versatus_cpp.hpp"
 
-/*
-    Based on https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/IERC20.sol
-*/
+
 class IERC20 {
 public:
     virtual ~IERC20() = default;

@@ -9,6 +9,8 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <cassert>
 
+#include <stdexcept>
+
 using namespace std;
 using json = nlohmann::json;
 
@@ -16,13 +18,14 @@ using json = nlohmann::json;
 constexpr std::size_t ADDRESS_SIZE = 20;
 using Address = std::array<uint8_t, ADDRESS_SIZE>;
 using uint256_t = boost::multiprecision::uint256_t;
+const int CUSTOM_INDENT_SPACES = 2;
 
 // Generic function to print an object to JSON string
 template <typename T>
 std::string print_json(const T& obj) {
     json j;
     obj.to_json(j);
-    return j.dump(2);  // The second argument specifies the indentation level
+    return j.dump(CUSTOM_INDENT_SPACES);
 }
 
 std::string uint256_to_hex(const uint256_t& value) {
@@ -102,7 +105,7 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 };
 
@@ -177,7 +180,7 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 };
 
@@ -202,7 +205,7 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 };
 
@@ -227,7 +230,7 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 };
 
@@ -255,7 +258,7 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 };
 
@@ -280,7 +283,7 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 };
 
@@ -308,13 +311,30 @@ public:
         if (decimals.value) decimals.to_json(j);
         if (total_supply.value) total_supply.to_json(j);
         if (balance_of.account != Address{}) balance_of.to_json(j);
-        if (transfer.address != Address{}) transfer.to_json(j);
-        if (transfer_from.from != Address{} && transfer_from.to != Address{} && transfer_from.value != 0) transfer_from.to_json(j);
-        if (approve.address != Address{} && approve.value != 0) approve.to_json(j);
-        if (allowance.owner != Address{} && allowance.spender != Address{}) allowance.to_json(j);
+        if (transfer.address != Address{}) {
+            json transferJson;
+            transfer.to_json(transferJson);
+            j["transfer"] = transferJson;
+        }
+        if (transfer_from.from != Address{} && transfer_from.to != Address{} && transfer_from.value != 0) {
+            json transferFromJson;
+            transfer_from.to_json(transferFromJson);
+            j["transferFrom"] = transferFromJson;
+        }
+        if (approve.address != Address{} && approve.value != 0) {
+            json approveJson;
+            approve.to_json(approveJson);
+            j["approve"] = approveJson;
+        }
+        if (allowance.owner != Address{} && allowance.spender != Address{}) {
+            json allowanceJson;
+            allowance.to_json(allowanceJson);
+            j["allowance"] = allowanceJson;
+        }
 
     }
 
+    // Custom deserialization function for ERC20Inputs
     void from_json(const json& j) {
         if (j.find("name") != j.end()) name.from_json(j.at("name"));
         if (j.find("symbol") != j.end()) symbol.from_json(j.at("symbol"));
@@ -325,7 +345,9 @@ public:
         if (j.find("transfer") != j.end()) {
             transfer.from_json(j.at("transfer"));
         }
-        if (j.find("transferFrom") != j.end()) transfer_from.from_json(j.at("transferFrom"));
+        if (j.find("transferFrom") != j.end()) {
+            transfer_from.from_json(j.at("transferFrom"));
+        }
         if (j.find("approve") != j.end()) approve.from_json(j.at("approve"));
         if (j.find("allowance") != j.end()) allowance.from_json(j.at("allowance"));
     }
@@ -333,7 +355,7 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 
 };
@@ -344,13 +366,14 @@ public:
 
     // Custom serialization function for FunctionInputs
     void to_json(json& j) const {
-        erc20.to_json(j);
+        json erc20Json;
+        erc20.to_json(erc20Json);
+        j["erc20"] = erc20Json;
     }
 
     // Custom deserialization function for FunctionInputs
     void from_json(const json& j) {
         if (j.find("erc20") != j.end()) {
-            cout << "erc20" << endl;
             erc20.from_json(j.at("erc20"));
         }
     }
@@ -358,7 +381,7 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 };
 
@@ -385,7 +408,244 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
+    }
+};
+
+struct Erc20TransferEvent {
+    Address from;
+    Address to;
+    uint256_t value;
+
+    Erc20TransferEvent& operator=(const Erc20TransferEvent& other) {
+        if (this != &other) {
+            from = other.from;
+            to = other.to;
+            value = other.value;
+        }
+        return *this;
+    }
+};
+
+struct Erc20ApprovalEvent {
+    Address owner;
+    Address spender;
+    uint256_t value;
+
+    Erc20ApprovalEvent& operator=(const Erc20ApprovalEvent& other) {
+        if (this != &other) {
+            owner = other.owner;
+            spender = other.spender;
+            value = other.value;
+        }
+        return *this;
+    }
+};
+
+#include <variant>
+
+class Erc20Result {
+public:
+    enum class Erc20ResultType {
+        EnumName,
+        EnumSymbol,
+        EnumDecimals,
+        EnumTotalSupply,
+        EnumBalanceOf,
+        EnumTransfer,
+        EnumTransferFrom,
+        EnumApprove,
+        EnumAllowance,
+        EnumUnknown
+    };
+
+    union Erc20ResultValue {
+        std::string name;
+        std::string symbol;
+        uint8_t decimals;
+        uint256_t totalSupply;
+        uint256_t balanceOf;
+        Erc20TransferEvent transfer;
+        Erc20TransferEvent transferFrom;
+        Erc20ApprovalEvent approve;
+        uint256_t allowance;
+
+        Erc20ResultValue() {}  // Default constructor for the union
+        ~Erc20ResultValue() {} // Destructor for the union
+
+    };
+
+    // Constructors for convenience
+    Erc20Result() : type(Erc20ResultType::EnumUnknown), value{} {}
+
+    // Getter for type
+    Erc20ResultType getType() const {
+        return type;
+    }
+
+    // Setter for type
+    void setType(Erc20ResultType newType) {
+        type = newType;
+    }
+
+    // Getter for value
+    const Erc20ResultValue& getValue() const {
+        return value;
+    }
+
+    Erc20Result &operator=(const Erc20Result &other)
+    {
+        // Handle copy assignment for value based on the type
+        switch (other.type) {
+        case Erc20ResultType::EnumName:
+            this->value.name = other.value.name;
+            break;
+        case Erc20ResultType::EnumSymbol:
+            this->value.symbol = other.value.symbol;
+            break;
+        case Erc20ResultType::EnumDecimals:
+            this->value.decimals = other.value.decimals;
+            break;
+        case Erc20ResultType::EnumTotalSupply:
+            this->value.totalSupply = other.value.totalSupply;
+            break;
+        case Erc20ResultType::EnumBalanceOf:
+            this->value.balanceOf = other.value.balanceOf;
+            break;
+        case Erc20ResultType::EnumTransfer:
+        case Erc20ResultType::EnumTransferFrom:
+            this->value.transfer = other.value.transfer;
+            break;
+        case Erc20ResultType::EnumApprove:
+            this->value.approve = other.value.approve;
+            break;
+        case Erc20ResultType::EnumAllowance:
+            this->value.allowance = other.value.allowance;
+            break;
+        default:
+            break;
+        }
+        return *this;
+    }
+
+    Erc20ResultType type;
+    Erc20ResultValue value;
+};
+
+class Erc721Result {
+
+};
+
+class ContractResult {
+public:
+    using ResultType = std::variant<Erc20Result, Erc721Result>;
+
+    ContractResult() : result(std::in_place_type<Erc20Result>) {}
+
+    // Getter for result
+    const ResultType& getResult() const {
+        return result;
+    }
+
+    void setType(Erc20Result::Erc20ResultType newType) {
+        std::get<Erc20Result>(result).type = newType;
+    }
+
+    // Setter for result
+    template <typename T>
+    void setResult(const T& newResult) {
+        result = newResult;
+    }
+
+    ResultType result;
+};
+
+
+class ContractOutputs {
+public:
+    ContractResult result;
+
+    json to_json() const {
+        json j;
+        const auto& contract_result = result;
+        json result_json;
+        // Use std::visit to handle the variant type
+        std::visit([&result_json](const auto& resultType) {
+            using ResultType = std::decay_t<decltype(resultType)>;
+            if constexpr (std::is_same_v<ResultType, Erc20Result>) {
+                switch (resultType.getType()) {
+
+                    case Erc20Result::Erc20ResultType::EnumName:
+                        result_json["type"] = "EnumName";
+                        result_json["value"] = resultType.value.name;
+                        break;
+
+                    case Erc20Result::Erc20ResultType::EnumSymbol:
+                        result_json["type"] = "EnumSymbol";
+                        result_json["value"] = resultType.value.symbol;
+                        break;
+
+                    case Erc20Result::Erc20ResultType::EnumDecimals:
+                        result_json["type"] = "EnumDecimals";
+                        result_json["value"] = resultType.value.decimals;
+                        break;
+
+                    case Erc20Result::Erc20ResultType::EnumTotalSupply:
+                        result_json["type"] = "EnumTotalSupply";
+                        result_json["value"] = resultType.value.totalSupply.str();
+                        break;
+
+                    case Erc20Result::Erc20ResultType::EnumBalanceOf:
+                        result_json["type"] = "EnumBalanceOf";
+                        result_json["value"] = resultType.value.balanceOf.str();
+                        break;
+
+                    case Erc20Result::Erc20ResultType::EnumTransfer:
+                        result_json["type"] = "EnumTransfer";
+                        result_json["value"] = json{
+                            {"from", resultType.value.transfer.from},
+                            {"to", resultType.value.transfer.to},
+                            {"value", "0x" + uint256_to_hex(resultType.value.transfer.value)}
+                        };
+                        break;
+
+                    case Erc20Result::Erc20ResultType::EnumTransferFrom:
+                        result_json["type"] = "EnumTransferFrom";
+                        result_json["value"] = json{
+                            {"from", resultType.value.transfer.from},
+                            {"to", resultType.value.transfer.to},
+                            {"value", "0x" + uint256_to_hex(resultType.value.transfer.value)}
+                        };
+                        break;
+
+                    case Erc20Result::Erc20ResultType::EnumApprove:
+                        result_json["type"] = "EnumApprove";
+                        result_json["value"] = json{
+                            {"owner", resultType.value.approve.owner},
+                            {"spender", resultType.value.approve.spender},
+                            {"value", "0x" + uint256_to_hex(resultType.value.approve.value)}
+                        };
+                        break;
+
+                    default:
+                        // Handle unknown result type
+                        result_json["type"] = "Unknown";
+                        result_json["value"] = "N/A";
+                        break;
+                }
+            } else if constexpr (std::is_same_v<ResultType, Erc721Result>) {
+                    // Handle Erc721Result
+                    result_json["type"] = "Erc721";
+                    // Access Erc721Result fields using result.erc721Result
+            }
+        }, contract_result.getResult());
+        j["results"].push_back(result_json);
+
+        return j;
+    }
+
+    void commit() const {
+        std::cout << to_json().dump(CUSTOM_INDENT_SPACES) << std::endl;
     }
 };
 
@@ -413,7 +673,7 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 };
 
@@ -446,10 +706,9 @@ public:
     std::string print_json() const {
         json j;
         to_json(j);
-        return j.dump(2);  // The second argument specifies the indentation level
+        return j.dump(CUSTOM_INDENT_SPACES);
     }
 };
-
 
 class ComputeInputs {
 
@@ -473,9 +732,13 @@ public:
         
         inputs.version = json_obj[versionStr];
 
-        inputs.account_info.from_json(json_obj[accountInfoStr]);
+        if (json_obj.contains(accountInfoStr)) {
+            inputs.account_info.from_json(json_obj[accountInfoStr]);
+        }
 
-        inputs.protocol_input.from_json(json_obj[protocolInputStr]);
+        if (json_obj.contains(protocolInputStr)) {
+            inputs.protocol_input.from_json(json_obj[protocolInputStr]);
+        }
 
         if (json_obj.contains(applicationInputStr)) {
             inputs.application_input.from_json(json_obj[applicationInputStr]);
@@ -530,5 +793,102 @@ public:
     }
 
 };
+
+
+enum Erc20ContractFunction {
+    ERC20_ALLOWANCE,
+    ERC20_APPROVE,
+    ERC20_TRANSFER,
+    ERC20_TRANSFERFROM,
+    UNSUPPORTED_FUNCTION
+};
+
+Erc20ContractFunction getErc20ContractFunction(const std::string &function_name) {
+    if (function_name == "allowance") {
+        return Erc20ContractFunction::ERC20_ALLOWANCE;
+    }
+    if (function_name == "approve") {
+        return Erc20ContractFunction::ERC20_APPROVE;
+    }
+    if (function_name == "transfer") {
+        return Erc20ContractFunction::ERC20_TRANSFER;
+    }
+    if (function_name == "transferFrom") {
+        return Erc20ContractFunction::ERC20_TRANSFERFROM;
+    }
+    return Erc20ContractFunction::UNSUPPORTED_FUNCTION;
+}
+
+
+void process_erc20(void) {
+
+    ComputeInputs inputs = ComputeInputs::gather();
+    ContractInputs contract_input = inputs.contract_input;
+
+    Erc20ContractFunction function = getErc20ContractFunction(contract_input.contract_fn);
+
+    ContractOutputs output;
+    auto& contract_result = output.result;
+
+    try {
+        switch (function) {
+            case Erc20ContractFunction::ERC20_ALLOWANCE: {
+                Address owner = contract_input.function_inputs.erc20.allowance.owner;
+                Address spender = contract_input.function_inputs.erc20.allowance.spender;
+
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumAllowance);
+                // Access the result
+                const auto& result = contract_result.getResult();
+                // call allowance
+                // set result
+                //result.erc20Result.value =
+            }
+            break;
+
+            case Erc20ContractFunction::ERC20_APPROVE: {
+                Address address = contract_input.function_inputs.erc20.approve.address;
+                uint256_t value = contract_input.function_inputs.erc20.approve.value;
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumApprove);
+                // call approve
+                // set result
+                //result.erc20Result.value =
+            }
+            break;
+
+            case Erc20ContractFunction::ERC20_TRANSFER: {
+                Address address = contract_input.function_inputs.erc20.transfer.address;
+                uint256_t value = contract_input.function_inputs.erc20.transfer.value;
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumTransfer);
+                // call transfer
+                // set result
+
+            }
+            break;
+
+            case Erc20ContractFunction::ERC20_TRANSFERFROM: {
+                Address from = contract_input.function_inputs.erc20.transfer_from.from;
+                Address to = contract_input.function_inputs.erc20.transfer_from.to;
+                uint256_t value = contract_input.function_inputs.erc20.transfer_from.value;
+                // call transferFrom
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumTransferFrom);
+                // set result
+            }
+            break;
+
+            case Erc20ContractFunction::UNSUPPORTED_FUNCTION:
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumUnknown);
+                break;
+
+            default:
+                throw std::runtime_error("Unsupported erc20 contract function: " + contract_input.contract_fn);
+        }
+    } catch (const std::exception &e) {
+            std::cerr << "Contract error: " << e.what() << std::endl;
+    }
+
+    // Commit the smart contract results
+    output.commit();
+
+}
 
 #endif  // VERSATUS_CPP_HPP

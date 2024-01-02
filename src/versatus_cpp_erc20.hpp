@@ -1,9 +1,10 @@
-#include "./versatus_cpp_ierc20.hpp"
 
 /* 
     Based on OpenZeppelin 
     https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/token/ERC20/ERC20.sol
 */
+
+#include "./versatus_cpp_ierc20.hpp"
 
 class ERC20 : public IERC20 {
 

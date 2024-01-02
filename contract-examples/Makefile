@@ -1,7 +1,7 @@
 CXX = g++
 CXX_WASM = em++
 
-CXXFLAGS = -std=c++20 -g
+CXXFLAGS = -std=c++20 -g -stdlib=libc++
 
 WASM_SRC = contract.wasm
 WASM2WAT = wasm2wat
