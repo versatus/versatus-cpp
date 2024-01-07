@@ -22,7 +22,7 @@ For Linux users, GCC can typically be installed via the package manager, e.g., `
 Windows users can use MinGW or Cygwin.
 MacOS users can install GCC via Homebrew using `brew install gcc`.
 
-## Clang:
+## Clang
 
 Part of the LLVM project, Clang is known for its excellent diagnostics (error and warning messages). Installation instructions are available on the LLVM download page.
 For Linux, it's often as simple as `sudo apt install clang` on Debian-based systems.
