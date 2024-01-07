@@ -77,6 +77,24 @@ std::string addressToString(const Address& address) {
     return ss.str();
 }
 
+class Input {
+public:
+    virtual ~Input() = default;
+
+    virtual void to_json(json& j) const {
+        // Base class implementation (empty)
+    }
+
+    virtual void from_json(const json& j) {
+        // Base class implementation (empty)
+    }
+
+    std::string print_json() const {
+        json j;
+        to_json(j);
+        return j.dump(CUSTOM_INDENT_SPACES);
+    }
+};
 
 class ApplicationInputs {
     const char* const contractFnStr = "contractFn";
@@ -109,144 +127,129 @@ public:
     }
 };
 
-class NameInput {
+class NameInput : public Input {
 public:
     std::string value;
 
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         if (!value.empty())
             j["value"] = value;
     }
 
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         j.at("value").get_to(value);
     }
 };
 
-class SymbolInput {
+class SymbolInput : public Input {
 public:
     std::string value;
 
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         if (!value.empty())
             j["value"] = value;
     }
 
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         j.at("value").get_to(value);
     }
 };
 
-class DecimalsInput {
+class DecimalsInput : public Input {
 public:
     uint8_t value;
 
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         j = json{{"value", value}};
     }
 
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         j.at("value").get_to(value);
     }
 };
 
-class TotalSupplyInput {
+class TotalSupplyInput : public Input {
 public:
     uint256_t value;
 
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         j = json{{"value", value.str()}};
     }
 
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         std::string value_str = j.at("value");
         value = boost::multiprecision::uint256_t(value_str);
     }
 };
 
-class BalanceOfInput {
+class BalanceOfInput : public Input {
 public:
     Address account;
 
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         j = json{{"address", addressToString(account)}};
     }
 
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         std::string account_str = j.at("address");
         account = convertStringToAddress(account_str);
     }
 
-    std::string print_json() const {
-        json j;
-        to_json(j);
-        return j.dump(CUSTOM_INDENT_SPACES);
-    }
 };
 
-class AllowanceInput {
+class AllowanceInput : public Input {
 public:
     Address owner;
     Address spender;
 
     // Custom serialization function for AllowanceInput
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         j = json{{"owner", addressToString(owner)}, {"spender", addressToString(spender)}};
     }
 
     // Custom deserialization function for AllowanceInput
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         std::string owner_str = j.at("owner");
         owner = convertStringToAddress(owner_str);
         std::string spender_str = j.at("spender");
         spender = convertStringToAddress(spender_str);
     }
 
-    std::string print_json() const {
-        json j;
-        to_json(j);
-        return j.dump(CUSTOM_INDENT_SPACES);
-    }
 };
 
-class TransferInput {
+class TransferInput : public Input {
 public:
     Address address;
     uint256_t value;
 
     // Custom serialization function for TransferInput
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         j = json{{"address", addressToString(address)}, {"value", "0x" + uint256_to_hex(value)}};
     }
 
     // Custom deserialization function for TransferInput
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         std::string address_str = j.at("address");
         address = convertStringToAddress(address_str);
         std::string value_str = j.at("value");
         value = boost::multiprecision::uint256_t(value_str);
     }
 
-    std::string print_json() const {
-        json j;
-        to_json(j);
-        return j.dump(CUSTOM_INDENT_SPACES);
-    }
 };
 
-class TransferFromInput {
+class TransferFromInput : public Input {
 public:
     Address from;
     Address to;
     uint256_t value;
 
     // Custom serialization function for TransferFromInput
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         j = json{{"from", addressToString(from)}, {"to", addressToString(to)}, {"value", "0x" + uint256_to_hex(value)}};
     }
 
     // Custom deserialization function for TransferFromInput
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         std::string from_str = j.at("from");
         from = convertStringToAddress(from_str);
         std::string to_str = j.at("to");
@@ -255,40 +258,30 @@ public:
         value = boost::multiprecision::uint256_t(value_str);
     }
 
-    std::string print_json() const {
-        json j;
-        to_json(j);
-        return j.dump(CUSTOM_INDENT_SPACES);
-    }
 };
 
-class ApproveInput {
+class ApproveInput : public Input {
 public:
     Address address;
     uint256_t value;
 
     // Custom serialization function for ApproveInput
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         j = json{{"address", addressToString(address)}, {"value", "0x" + uint256_to_hex(value)}};
     }
 
     // Custom deserialization function for ApproveInput
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         std::string address_str = j.at("address");
         address = convertStringToAddress(address_str);
         std::string value_str = j.at("value");
         value = boost::multiprecision::uint256_t(value_str);
     }
 
-    std::string print_json() const {
-        json j;
-        to_json(j);
-        return j.dump(CUSTOM_INDENT_SPACES);
-    }
 };
 
 
-class ERC20Inputs {
+class ERC20Inputs : public Input {
 public:
     NameInput name;
     SymbolInput symbol;
@@ -305,7 +298,7 @@ public:
           transfer(), transfer_from(), approve(), allowance() {}
 
     // Custom serialization function for ERC20Inputs
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         if (!name.value.empty()) name.to_json(j);
         if (!symbol.value.empty()) symbol.to_json(j);
         if (decimals.value) decimals.to_json(j);
@@ -335,7 +328,7 @@ public:
     }
 
     // Custom deserialization function for ERC20Inputs
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         if (j.find("name") != j.end()) name.from_json(j.at("name"));
         if (j.find("symbol") != j.end()) symbol.from_json(j.at("symbol"));
         if (j.find("decimals") != j.end()) decimals.from_json(j.at("decimals"));
@@ -352,46 +345,35 @@ public:
         if (j.find("allowance") != j.end()) allowance.from_json(j.at("allowance"));
     }
 
-    std::string print_json() const {
-        json j;
-        to_json(j);
-        return j.dump(CUSTOM_INDENT_SPACES);
-    }
-
 };
 
-class FunctionInputs {
+class FunctionInputs : public Input {
 public:
     ERC20Inputs erc20;
 
     // Custom serialization function for FunctionInputs
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         json erc20Json;
         erc20.to_json(erc20Json);
         j["erc20"] = erc20Json;
     }
 
     // Custom deserialization function for FunctionInputs
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         if (j.find("erc20") != j.end()) {
             erc20.from_json(j.at("erc20"));
         }
     }
 
-    std::string print_json() const {
-        json j;
-        to_json(j);
-        return j.dump(CUSTOM_INDENT_SPACES);
-    }
 };
 
-class ContractInputs {
+class ContractInputs : public Input {
 public:
     std::string contract_fn;
     FunctionInputs function_inputs;
 
     // Custom serialization function for ContractInput
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         j["contractFn"] = contract_fn;
 
         json functionInputsJson;
@@ -400,16 +382,11 @@ public:
     }
 
     // Custom deserialization function for ContractInput
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         j.at("contractFn").get_to(contract_fn);
         function_inputs.from_json(j.at("functionInputs"));
     }
 
-    std::string print_json() const {
-        json j;
-        to_json(j);
-        return j.dump(CUSTOM_INDENT_SPACES);
-    }
 };
 
 struct Erc20TransferEvent {
@@ -464,11 +441,12 @@ public:
         std::string symbol;
         uint8_t decimals;
         uint256_t totalSupply;
-        uint256_t balanceOf;
+        uint256_t balance;
         Erc20TransferEvent transfer;
         Erc20TransferEvent transferFrom;
         Erc20ApprovalEvent approve;
-        uint256_t allowance;
+        bool success;
+        uint256_t remaining;
 
         Erc20ResultValue() {}  // Default constructor for the union
         ~Erc20ResultValue() {} // Destructor for the union
@@ -510,17 +488,17 @@ public:
             this->value.totalSupply = other.value.totalSupply;
             break;
         case Erc20ResultType::EnumBalanceOf:
-            this->value.balanceOf = other.value.balanceOf;
+            this->value.balance = other.value.balance;
             break;
         case Erc20ResultType::EnumTransfer:
         case Erc20ResultType::EnumTransferFrom:
-            this->value.transfer = other.value.transfer;
+            this->value.success = other.value.success;
             break;
         case Erc20ResultType::EnumApprove:
             this->value.approve = other.value.approve;
             break;
         case Erc20ResultType::EnumAllowance:
-            this->value.allowance = other.value.allowance;
+            this->value.remaining = other.value.remaining;
             break;
         default:
             break;
@@ -562,6 +540,8 @@ public:
 
 
 class ContractOutputs {
+    const char* const contractOutputStr = "contractOutput";
+
 public:
     ContractResult result;
 
@@ -569,6 +549,7 @@ public:
         json j;
         const auto& contract_result = result;
         json result_json;
+
         // Use std::visit to handle the variant type
         std::visit([&result_json](const auto& resultType) {
             using ResultType = std::decay_t<decltype(resultType)>;
@@ -597,34 +578,22 @@ public:
 
                     case Erc20Result::Erc20ResultType::EnumBalanceOf:
                         result_json["type"] = "EnumBalanceOf";
-                        result_json["value"] = resultType.value.balanceOf.str();
+                        result_json["value"] = resultType.value.balance.str();
                         break;
 
                     case Erc20Result::Erc20ResultType::EnumTransfer:
                         result_json["type"] = "EnumTransfer";
-                        result_json["value"] = json{
-                            {"from", resultType.value.transfer.from},
-                            {"to", resultType.value.transfer.to},
-                            {"value", "0x" + uint256_to_hex(resultType.value.transfer.value)}
-                        };
+                        result_json["value"] = std::to_string(resultType.value.success);
                         break;
 
                     case Erc20Result::Erc20ResultType::EnumTransferFrom:
                         result_json["type"] = "EnumTransferFrom";
-                        result_json["value"] = json{
-                            {"from", resultType.value.transfer.from},
-                            {"to", resultType.value.transfer.to},
-                            {"value", "0x" + uint256_to_hex(resultType.value.transfer.value)}
-                        };
+                        result_json["value"] = std::to_string(resultType.value.success);
                         break;
 
                     case Erc20Result::Erc20ResultType::EnumApprove:
                         result_json["type"] = "EnumApprove";
-                        result_json["value"] = json{
-                            {"owner", resultType.value.approve.owner},
-                            {"spender", resultType.value.approve.spender},
-                            {"value", "0x" + uint256_to_hex(resultType.value.approve.value)}
-                        };
+                        result_json["value"] = std::to_string(resultType.value.success);
                         break;
 
                     default:
@@ -645,11 +614,11 @@ public:
     }
 
     void commit() const {
-        std::cout << to_json().dump(CUSTOM_INDENT_SPACES) << std::endl;
+        cout << contractOutputStr << " :" << to_json().dump(CUSTOM_INDENT_SPACES) << std::endl;
     }
 };
 
-class ProtocolInputs {
+class ProtocolInputs : public Input {
     const char* const versionStr = "version";
     const char* const blockHeightStr = "blockHeight";
     const char* const blockTimeStr = "blockTime";
@@ -659,22 +628,17 @@ public:
     uint64_t block_time;
 
     // Custom serialization function for ProtocolInputs
-    void to_json(json& j) const {
+    void to_json(json& j) const override {
         j = json{{versionStr, version}, {blockHeightStr, block_height}, {blockTimeStr, block_time}};
     }
 
     // Custom deserialization function for ProtocolInputs
-    void from_json(const json& j) {
+    void from_json(const json& j) override {
         if (j.find(versionStr) != j.end()) j.at(versionStr).get_to(version);
         if (j.find(blockHeightStr) != j.end()) j.at(blockHeightStr).get_to(block_height);
         if (j.find(blockTimeStr) != j.end()) j.at(blockTimeStr).get_to(block_time);
     }
 
-    std::string print_json() const {
-        json j;
-        to_json(j);
-        return j.dump(CUSTOM_INDENT_SPACES);
-    }
 };
 
 class AccountInfo {
@@ -747,7 +711,7 @@ public:
         
         if (json_obj.contains(contractInputStr)) {
             inputs.contract_input.from_json(json_obj[contractInputStr]);
-            cout << "Object " << contractInputStr << " :" << print_json(inputs.contract_input) << std::endl;
+            cout << contractInputStr << " :" << print_json(inputs.contract_input) << std::endl;
         }
 
         return inputs;
@@ -794,101 +758,5 @@ public:
 
 };
 
-
-enum Erc20ContractFunction {
-    ERC20_ALLOWANCE,
-    ERC20_APPROVE,
-    ERC20_TRANSFER,
-    ERC20_TRANSFERFROM,
-    UNSUPPORTED_FUNCTION
-};
-
-Erc20ContractFunction getErc20ContractFunction(const std::string &function_name) {
-    if (function_name == "allowance") {
-        return Erc20ContractFunction::ERC20_ALLOWANCE;
-    }
-    if (function_name == "approve") {
-        return Erc20ContractFunction::ERC20_APPROVE;
-    }
-    if (function_name == "transfer") {
-        return Erc20ContractFunction::ERC20_TRANSFER;
-    }
-    if (function_name == "transferFrom") {
-        return Erc20ContractFunction::ERC20_TRANSFERFROM;
-    }
-    return Erc20ContractFunction::UNSUPPORTED_FUNCTION;
-}
-
-
-void process_erc20(void) {
-
-    ComputeInputs inputs = ComputeInputs::gather();
-    ContractInputs contract_input = inputs.contract_input;
-
-    Erc20ContractFunction function = getErc20ContractFunction(contract_input.contract_fn);
-
-    ContractOutputs output;
-    auto& contract_result = output.result;
-
-    try {
-        switch (function) {
-            case Erc20ContractFunction::ERC20_ALLOWANCE: {
-                Address owner = contract_input.function_inputs.erc20.allowance.owner;
-                Address spender = contract_input.function_inputs.erc20.allowance.spender;
-
-                contract_result.setType(Erc20Result::Erc20ResultType::EnumAllowance);
-                // Access the result
-                const auto& result = contract_result.getResult();
-                // call allowance
-                // set result
-                //result.erc20Result.value =
-            }
-            break;
-
-            case Erc20ContractFunction::ERC20_APPROVE: {
-                Address address = contract_input.function_inputs.erc20.approve.address;
-                uint256_t value = contract_input.function_inputs.erc20.approve.value;
-                contract_result.setType(Erc20Result::Erc20ResultType::EnumApprove);
-                // call approve
-                // set result
-                //result.erc20Result.value =
-            }
-            break;
-
-            case Erc20ContractFunction::ERC20_TRANSFER: {
-                Address address = contract_input.function_inputs.erc20.transfer.address;
-                uint256_t value = contract_input.function_inputs.erc20.transfer.value;
-                contract_result.setType(Erc20Result::Erc20ResultType::EnumTransfer);
-                // call transfer
-                // set result
-
-            }
-            break;
-
-            case Erc20ContractFunction::ERC20_TRANSFERFROM: {
-                Address from = contract_input.function_inputs.erc20.transfer_from.from;
-                Address to = contract_input.function_inputs.erc20.transfer_from.to;
-                uint256_t value = contract_input.function_inputs.erc20.transfer_from.value;
-                // call transferFrom
-                contract_result.setType(Erc20Result::Erc20ResultType::EnumTransferFrom);
-                // set result
-            }
-            break;
-
-            case Erc20ContractFunction::UNSUPPORTED_FUNCTION:
-                contract_result.setType(Erc20Result::Erc20ResultType::EnumUnknown);
-                break;
-
-            default:
-                throw std::runtime_error("Unsupported erc20 contract function: " + contract_input.contract_fn);
-        }
-    } catch (const std::exception &e) {
-            std::cerr << "Contract error: " << e.what() << std::endl;
-    }
-
-    // Commit the smart contract results
-    output.commit();
-
-}
 
 #endif  // VERSATUS_CPP_HPP

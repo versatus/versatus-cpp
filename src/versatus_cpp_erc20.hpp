@@ -183,3 +183,100 @@ private:
         TransferEvent(from, to, value);
     }
 };
+
+
+enum Erc20ContractFunction {
+    ERC20_ALLOWANCE,
+    ERC20_APPROVE,
+    ERC20_TRANSFER,
+    ERC20_TRANSFERFROM,
+    UNSUPPORTED_FUNCTION
+};
+
+Erc20ContractFunction getErc20ContractFunction(const std::string &function_name) {
+    if (function_name == "allowance") {
+        return Erc20ContractFunction::ERC20_ALLOWANCE;
+    }
+    if (function_name == "approve") {
+        return Erc20ContractFunction::ERC20_APPROVE;
+    }
+    if (function_name == "transfer") {
+        return Erc20ContractFunction::ERC20_TRANSFER;
+    }
+    if (function_name == "transferFrom") {
+        return Erc20ContractFunction::ERC20_TRANSFERFROM;
+    }
+    return Erc20ContractFunction::UNSUPPORTED_FUNCTION;
+}
+
+
+void process_erc20(void) {
+
+    ComputeInputs inputs = ComputeInputs::gather();
+    ContractInputs contract_input = inputs.contract_input;
+
+    Erc20ContractFunction function = getErc20ContractFunction(contract_input.contract_fn);
+
+    ContractOutputs output;
+    auto& contract_result = output.result;
+
+    try {
+        switch (function) {
+            case Erc20ContractFunction::ERC20_ALLOWANCE: {
+                Address owner = contract_input.function_inputs.erc20.allowance.owner;
+                Address spender = contract_input.function_inputs.erc20.allowance.spender;
+
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumAllowance);
+                // Access the result
+                const auto& result = contract_result.getResult();
+                // call allowance
+                // set result
+                //result.erc20Result.value =
+            }
+            break;
+
+            case Erc20ContractFunction::ERC20_APPROVE: {
+                Address address = contract_input.function_inputs.erc20.approve.address;
+                uint256_t value = contract_input.function_inputs.erc20.approve.value;
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumApprove);
+                // call approve
+                // set result
+                //result.erc20Result.value =
+            }
+            break;
+
+            case Erc20ContractFunction::ERC20_TRANSFER: {
+                Address address = contract_input.function_inputs.erc20.transfer.address;
+                uint256_t value = contract_input.function_inputs.erc20.transfer.value;
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumTransfer);
+                // call transfer
+                // set result
+
+            }
+            break;
+
+            case Erc20ContractFunction::ERC20_TRANSFERFROM: {
+                Address from = contract_input.function_inputs.erc20.transfer_from.from;
+                Address to = contract_input.function_inputs.erc20.transfer_from.to;
+                uint256_t value = contract_input.function_inputs.erc20.transfer_from.value;
+                // call transferFrom
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumTransferFrom);
+                // set result
+            }
+            break;
+
+            case Erc20ContractFunction::UNSUPPORTED_FUNCTION:
+                contract_result.setType(Erc20Result::Erc20ResultType::EnumUnknown);
+                break;
+
+            default:
+                throw std::runtime_error("Unsupported erc20 contract function: " + contract_input.contract_fn);
+        }
+    } catch (const std::exception &e) {
+            std::cerr << "Contract error: " << e.what() << std::endl;
+    }
+
+    // Commit the smart contract results
+    output.commit();
+
+}
