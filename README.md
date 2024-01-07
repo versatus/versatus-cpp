@@ -1,4 +1,4 @@
-# versatus-cpp
+# Versatus-cpp
 
 ## Overview
 This repository provides essential tools and interfaces for developing Versatus smart contracts using C++. It complements the general smart contract development guide on Versatus (https://github.com/versatus/versatus/blob/main/docs/DevelopingSmartContracts.md) with C++-specific information.
@@ -15,16 +15,16 @@ Emscripten is an essential tool for compiling C++ code to WASM. Install Emscript
 ## Compilers: GCC and Clang
 To develop C++ smart contracts, you will need a C++ compiler. The most common compilers are GCC (GNU Compiler Collection) and Clang.
 
-## GCC: A widely-used open-source compiler supporting various programming languages, including C++.
+## GCC
 
 To install GCC, visit the GNU project page.
 For Linux users, GCC can typically be installed via the package manager, e.g., `sudo apt install gcc` on Debian-based systems.
 Windows users can use MinGW or Cygwin.
 MacOS users can install GCC via Homebrew using `brew install gcc`.
 
-## Clang: Part of the LLVM project, Clang is known for its excellent diagnostics (error and warning messages).
+## Clang:
 
-Installation instructions are available on the LLVM download page.
+Part of the LLVM project, Clang is known for its excellent diagnostics (error and warning messages). Installation instructions are available on the LLVM download page.
 For Linux, it's often as simple as `sudo apt install clang` on Debian-based systems.
 Windows users can install Clang via the LLVM website or through a package manager like Chocolatey.
 MacOS users have Clang installed by default, or it can be updated via Homebrew.
@@ -33,7 +33,6 @@ MacOS users have Clang installed by default, or it can be updated via Homebrew.
 CMake is an open-source family of tools designed to build, test, and package software. CMake simplifies the build process across different platforms and compilers, automating the detection of dependencies, libraries, and tools, streamlining the build process. CMake generates native scripts `(CMakeLists.txt)` that are more readable and maintainable compared to traditional makefiles.
 
 Installing CMake:
-
 Visit the CMake download page for official binaries and source files.
 Linux users can typically install CMake via their package manager, e.g., `sudo apt install cmake`.
 For Windows, CMake is available as an installer or zip file on the CMake website.
@@ -83,6 +82,13 @@ wasm2wat contract.wasm  -o contract.wat`
 
 ## Deploying Your Contract
 Follow the Versatus network's guidelines for deploying your smart contract, as detailed in the Versatus documentation.
+
+
+
+
+
+
+
 
 
 ❯ ls
