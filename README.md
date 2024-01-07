@@ -47,9 +47,9 @@ A Makefile is a script that simplifies the build process.
 ## Clean Build
 This command cleans the build by removing compiled files (local, contract.wasm, contract.wat).
 
-`❯ make clean
+`❯ make clean`
 
-rm -f local contract.wasm contract.wat`
+`rm -f local contract.wasm contract.wat`
 
 Build
 This command compiles your C++ code to both a local executable (for testing on your computer) and WASM (for use on Versatus).
