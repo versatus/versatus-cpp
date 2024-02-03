@@ -59,7 +59,7 @@ Address convertStringToAddress(const std::string& account_address) {
             throw std::invalid_argument("Input address string must start with '0x'");
         }
     } catch (const std::exception& e) {
-        std::cerr << "ERROR Address parse: " << e.what() << std::endl;
+        std::cerr << "ERROR Address parse: " << e.what() << " for " << account_address << std::endl;
         assert(0);
         // Return the magic address in case of an exception
         return Address{0xDE, 0xAD, 0xBE, 0xEF};
